@@ -34,6 +34,10 @@ async function run() {
       .db("compHarborDB")
       .collection("brandCollection");
 
+    const cartCollection = client
+      .db("compHarborDB")
+      .collection("cartCollection");
+
     // Setting up GET API for all brands
     app.get("/brands", async (req, res) => {
       const cursor = brandCollection.find();
@@ -78,7 +82,7 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updatedProduct = req.body;
-      const coffee = {
+      const details = {
         $set: {
           product_name: updatedProduct.product_name,
           product_image: updatedProduct.product_image,
@@ -90,7 +94,31 @@ async function run() {
         },
       };
 
-      const result = await productCollection.updateOne(query, coffee, options);
+      const result = await productCollection.updateOne(query, details, options);
+      res.send(result);
+    });
+
+    // Setting up POST API for cart
+    app.post("/carts", async (req, res) => {
+      const newProductForCart = req.body;
+      console.log(newProductForCart);
+      const result = await cartCollection.insertOne(newProductForCart);
+      res.send(result);
+    });
+
+    // Setting up GET API for products from cart based on user id
+    app.get("/carts/:userID", async (req, res) => {
+      const userID = req.params.userID;
+      const query = { user_id: userID };
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Setting up DELETE API for products in cart
+    app.delete("/carts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
 
