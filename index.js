@@ -25,6 +25,34 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
+
+    const productCollection = client
+      .db("compHarborDB")
+      .collection("productCollection");
+
+    //   Setting up POST API for product
+    app.post("/products", async (req, res) => {
+      const newProduct = req.body;
+      console.log(newProduct);
+      const result = await productCollection.insertOne(newProduct);
+      res.send(result);
+    });
+
+    // Setting up GET API for products
+    app.get("/products", async (req, res) => {
+      const cursor = productCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // Setting up GET API for products based on brands
+    app.get("/products/:brand", async (req, res) => {
+      const brand = req.params.brand;
+      const query = { product_brand: brand };
+      const result = await productCollection.find(query).toArray();
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
