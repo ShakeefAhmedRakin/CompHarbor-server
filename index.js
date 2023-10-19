@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios"); // Import the axios library
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -98,6 +99,13 @@ async function run() {
       res.send(result);
     });
 
+    // Setting up GET API for all carts
+    app.get("/carts", async (req, res) => {
+      const cursor = cartCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // Setting up POST API for cart
     app.post("/carts", async (req, res) => {
       const newProductForCart = req.body;
@@ -107,16 +115,49 @@ async function run() {
     });
 
     // Setting up GET API for products from cart based on user id
+    // Use "localhost" as the API endpoint
+
+    const productAPIURL = process.env.apiURL; // Replace with the correct URL
+
     app.get("/carts/:userID", async (req, res) => {
       const userID = req.params.userID;
       const query = { user_id: userID };
-      const result = await cartCollection.find(query).toArray();
-      res.send(result);
+      const products = await cartCollection.find(query).toArray();
+
+      const result = [];
+
+      const fetchPromises = products.map(async (product) => {
+        const productID = product.product_id;
+        try {
+          const response = await axios.get(
+            `${productAPIURL}/product/${productID}`
+          );
+          const productDetails = response.data;
+
+          productDetails.cart_id = product._id;
+
+          return productDetails;
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+          return null;
+        }
+      });
+
+      Promise.all(fetchPromises)
+        .then((data) => {
+          result.push(...data.filter((item) => item !== null));
+          res.send(result);
+        })
+        .catch((error) => {
+          console.error("Error handling fetch promises:", error);
+          res.status(500).send("Internal Server Error");
+        });
     });
 
     // Setting up DELETE API for products in cart
     app.delete("/carts/:id", async (req, res) => {
       const id = req.params.id;
+      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result);
