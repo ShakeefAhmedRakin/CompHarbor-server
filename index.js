@@ -30,6 +30,17 @@ async function run() {
       .db("compHarborDB")
       .collection("productCollection");
 
+    const brandCollection = client
+      .db("compHarborDB")
+      .collection("brandCollection");
+
+    // Setting up GET API for all brands
+    app.get("/brands", async (req, res) => {
+      const cursor = brandCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     //   Setting up POST API for product
     app.post("/products", async (req, res) => {
       const newProduct = req.body;
