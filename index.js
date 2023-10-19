@@ -38,18 +38,26 @@ async function run() {
       res.send(result);
     });
 
-    // Setting up GET API for products
+    // Setting up GET API for all products
     app.get("/products", async (req, res) => {
       const cursor = productCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    // Setting up GET API for products based on brands
+    // Setting up GET API for all products based on brands
     app.get("/products/:brand", async (req, res) => {
       const brand = req.params.brand;
       const query = { product_brand: brand };
       const result = await productCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Setting up GET API for single product based on ID
+    app.get("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
       res.send(result);
     });
 
