@@ -61,6 +61,28 @@ async function run() {
       res.send(result);
     });
 
+    // Setting up PUT API for single product
+    app.put("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProduct = req.body;
+      const coffee = {
+        $set: {
+          product_name: updatedProduct.product_name,
+          product_image: updatedProduct.product_image,
+          product_brand: updatedProduct.product_brand,
+          product_type: updatedProduct.product_type,
+          product_price: updatedProduct.product_price,
+          product_rating: updatedProduct.product_rating,
+          product_description: updatedProduct.product_description,
+        },
+      };
+
+      const result = await productCollection.updateOne(query, coffee, options);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
