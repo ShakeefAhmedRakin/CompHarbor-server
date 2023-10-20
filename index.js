@@ -71,10 +71,26 @@ async function run() {
 
     // Setting up GET API for single product based on ID
     app.get("/product/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await productCollection.findOne(query);
-      res.send(result);
+      try {
+        const id = req.params.id;
+
+        if (!ObjectId.isValid(id)) {
+          res.status(400).send({ error: "Invalid product ID" });
+          return;
+        }
+
+        const query = { _id: new ObjectId(id) };
+        const result = await productCollection.findOne(query);
+
+        if (!result) {
+          res.status(404).send({ error: "Product not found" });
+          return;
+        }
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Internal server error" });
+      }
     });
 
     // Setting up PUT API for single product
