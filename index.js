@@ -24,7 +24,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
 
     const productCollection = client
@@ -107,7 +107,6 @@ async function run() {
           product_type: updatedProduct.product_type,
           product_price: updatedProduct.product_price,
           product_rating: updatedProduct.product_rating,
-          product_description: updatedProduct.product_description,
         },
       };
 
